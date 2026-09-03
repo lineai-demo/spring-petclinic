@@ -1,11 +1,12 @@
 # This workflow will build a Java project with Gradle, and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-java-with-gradle
+# codelogic-build-feedback
 
 name: Java CI with Gradle
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'lineai/**' ]
   pull_request:
     branches: [ main ]
 
@@ -28,4 +29,29 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Build with Gradle
-        run: ./gradlew build
+        env:
+          NO_COLOR: "1"
+          TERM: dumb
+        run: ./gradlew build 2>&1 | tee "${{ github.workspace }}/build.log"
+      - name: Ensure Lineai build.log exists
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "${{ github.workspace }}/build.log" ]; then
+            echo "No teed build.log found; a step may have failed before log capture." > "${{ github.workspace }}/build.log"
+            echo "Workflow: ${{ github.workflow }}" >> "${{ github.workspace }}/build.log"
+            echo "Job status: ${{ job.status }}" >> "${{ github.workspace }}/build.log"
+          fi
+      - name: Send Lineai Build Info
+        if: always()
+        uses: lineai-intelligence/lineai-send-build-info-github-action@v1.0.3
+        with:
+          lineai_host: ${{ vars.LINEAI_HOST }}
+          agent_uuid: ${{ vars.AGENT_UUID }}
+          agent_password: ${{ secrets.AGENT_PASSWORD }}
+          scan_path: /github/workspace
+          job_name: ${{ github.workflow }}
+          build_number: ${{ github.run_number }}
+          build_status: ${{ job.status }}
+          pipeline_system: GitHub Actions
+          log_file: /github/workspace/build.log
