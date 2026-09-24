@@ -31,7 +31,12 @@
     <webjars-font-awesome.version>4.7.0</webjars-font-awesome.version>
 
     <checkstyle.version>10.20.1</checkstyle.version>
-    <jacoco.version>0.6.3.201306030806</jacoco.version>
+    <!-- jacoco.version is intentionally NOT downgraded to 0.6.3.201306030806: that 2013-era
+        agent cannot instrument Java 17 bytecode (it crashes the JVM trying to patch
+        java.util.UUID with a NoSuchFieldException for $jacocoAccess), so it fails every
+        `mvn test` run on this project (java.version=17 above). Keeping 0.8.12, the last
+        working version, until a genuinely newer jacoco release is available. -->
+    <jacoco.version>0.8.12</jacoco.version>
     <libsass.version>0.2.29</libsass.version>
     <lifecycle-mapping>1.0.0</lifecycle-mapping>
     <maven-checkstyle.version>3.6.0</maven-checkstyle.version>
