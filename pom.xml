@@ -38,6 +38,7 @@
     <nohttp-checkstyle.version>0.0.11</nohttp-checkstyle.version>
     <spring-format.version>0.0.43</spring-format.version>
 
+    <tomcat.version>11.0.25</tomcat.version>
   </properties>
 
   <dependencies>
